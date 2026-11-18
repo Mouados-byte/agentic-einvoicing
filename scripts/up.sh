@@ -37,8 +37,11 @@ fi
 step "Installing ARK ${ARK_VERSION}"
 # Idempotent (helm upgrade --install). On a slow link a big image can outlast a Helm hook
 # timeout; the pull carries on in the background, so a retry usually gets through.
+# ARK_SERVICES limits the install to the listed components (CI uses the minimum: a free
+# runner can't schedule the dashboard and marketplace extras). Empty = everything.
+read -r -a SERVICES <<< "${ARK_SERVICES:-}"
 for attempt in 1 2 3; do
-  ark install --yes --ark-version "$ARK_VERSION" --wait-for-ready 10m && break
+  ark install --yes --ark-version "$ARK_VERSION" --wait-for-ready 10m "${SERVICES[@]}" && break
   (( attempt == 3 )) && exit 1
   echo "ark install failed (attempt ${attempt}/3), retrying in 20s"; sleep 20
 done
