@@ -29,7 +29,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 40
     env:
-      ARK_SERVICES: cert-manager-repo helm-repo-update cert-manager gateway-api-crds ark-controller ark-apiserver ark-completions ark-api ark-broker
+      ARK_SERVICES: ark-controller ark-completions ark-tenant ark-api ark-broker
       OPENROUTER_API_KEY: ${{ (github.event_name == 'workflow_dispatch' && inputs.real_model) && secrets.OPENROUTER_API_KEY || '' }}
     steps:
       - uses: actions/checkout@v4
