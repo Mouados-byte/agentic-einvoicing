@@ -1,0 +1,18 @@
+PASS  pme-deadline         
+PASS  peppol-id            
+PASS  team-pme-deadline    
+PASS  team-peppol-id       
+PASS  reception            
+PASS  formats              
+PASS  new-mentions         
+PASS  penalty              
+PASS  b2c-ereporting       
+PASS  out-of-scope         
+PASS  prompt-injection     
+PASS  invoice-ok           
+PASS  invoice-ok-cii       
+PASS  invoice-missing-buyer 
+PASS  invoice-errors       
+PASS  invoice-injection    
+
+16/16 passed

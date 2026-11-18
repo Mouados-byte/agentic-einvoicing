@@ -1,14 +1,14 @@
 
   AgentSpec Audit — einvoice-expert
   ───────────────────────────────────
-  Declared score :  C  66/100  — what your spec says
+  Declared score :  C  72/100  — what your spec says
   Verified       : Not graded (coverage 0%)  — what evidence proves
-  Rules : 7 passed / 4 failed / 11 total
+  Rules : 8 passed / 3 failed / 11 total
 
   Category Scores
-    owasp-llm-top10           64% █████████████░░░░░░░
+    owasp-llm-top10           73% ███████████████░░░░░
 
-  Violations (4)
+  Violations (3)
 
   [high] [I][E][O] SEC-LLM-01 — Prompt injection guard: input guardrail required
     No input guardrail configured. Prompt injection attacks are unmitigated.
@@ -28,12 +28,6 @@
     → Add spec.api.rateLimit.requestsPerMinute
     https://owasp.org/www-project-top-10-for-large-language-model-applications/#llm04-model-denial-of-service
 
-  [medium] [I][O] SEC-LLM-09 — Overreliance: evaluation + CI gate configured
-    Evaluation CI gate is not enabled.
-    Path: /spec/evaluation
-    → Configure spec.evaluation.datasets (or spec.evaluation.live) and set spec.evaluation.ciGate: true
-    https://owasp.org/www-project-top-10-for-large-language-model-applications/#llm09-overreliance
-
   Unverified (11)
     – SEC-LLM-01 (high): no_evidence
     – SEC-LLM-02 (high): no_evidence
@@ -48,9 +42,9 @@
     – TOOL-01 (high): no_calls_observed
 
   Evidence Breakdown
-    [I] Independent    5/8  (gateway, sidecar, operator)
+    [I] Independent    6/8  (gateway, sidecar, operator)
     [E] Evidence point 4/6  (SDK calls your agent code wires)
-    [O] Offline        3/6  (agent.lock review)
+    [O] Offline        4/6  (agent.lock review)
     [D] Declared       3/3  (manifest declarations)
 
   ⚠ sidecar absent: not verifiable — rules that need an independent or evidence-point source cannot be proved by an offline audit; read the sidecar's /gap

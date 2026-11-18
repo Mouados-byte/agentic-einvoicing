@@ -1,6 +1,6 @@
 # LinkedIn post (draft, not published)
 
-Attach `docs/demo.mp4` (67 s, with voiceover). Replace `<repo link>` once the repo is public.
+Attach `docs/demo.mp4` (77 s, with voiceover). Replace `<repo link>` once the repo is public.
 
 ---
 
@@ -21,9 +21,12 @@ So I built a small set of agents on Kubernetes:
 
 The agents never answer from memory. Every fact comes from an MCP tool server, and every question is a Kubernetes resource you can inspect, with its duration and token count.
 
+Then I moved the same agents to a second runtime. They run on McKinsey's ARK and on kagent from the CNCF, with the same tool server, the same prompts and the same tests. Only the YAML around them changed, and every test that applies passes on both.
+
 What I took away from it:
 → Evals are what make an agent trustworthy. Without them, "it works" means "it worked once".
 → Treat everything the agent reads as data, including a supplier's invoice.
+→ Put the knowledge in tools, not in the runtime. That is what made switching runtimes a YAML change.
 → The boring parts take the time. A corporate proxy broke image pulls, builds and LLM calls, and each one needed its own fix.
 
 Everything comes up with one command (`make up`) on a local cluster, with or without an API key.

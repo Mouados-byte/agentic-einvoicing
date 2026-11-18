@@ -1,0 +1,14 @@
+# ARK: Model "default" (chart/einvoice-agents/templates/model.yaml, provider openai + baseUrl).
+# The Secret kagent-openrouter is created by scripts/up-kagent.sh from OPENROUTER_API_KEY.
+apiVersion: kagent.dev/v1alpha2
+kind: ModelConfig
+metadata:
+  name: openrouter-haiku
+  namespace: kagent
+spec:
+  provider: OpenAI
+  model: anthropic/claude-haiku-5.5
+  apiKeySecret: kagent-openrouter
+  apiKeySecretKey: OPENROUTER_API_KEY
+  openAI:
+    baseUrl: https://openrouter.ai/api/v1

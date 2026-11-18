@@ -1,0 +1,43 @@
+# Helm values for kagent 0.10.6, trimmed to what the two e-invoicing agents need:
+# the controller (A2A endpoint + reconciler) and its bundled PostgreSQL.
+# Everything else the chart ships (UI, kmcp, built-in tool server, Grafana MCP,
+# the eleven example agents) is turned off to save RAM.
+ui:
+  replicas: 0
+kmcp:
+  enabled: false
+kagent-tools:
+  enabled: false
+grafana-mcp:
+  enabled: false
+k8s-agent: { enabled: false }
+kgateway-agent: { enabled: false }
+istio-agent: { enabled: false }
+promql-agent: { enabled: false }
+observability-agent: { enabled: false }
+argo-rollouts-agent: { enabled: false }
+helm-agent: { enabled: false }
+cilium-policy-agent: { enabled: false }
+cilium-manager-agent: { enabled: false }
+cilium-debug-agent: { enabled: false }
+controller:
+  resources:
+    requests: { cpu: 50m, memory: 96Mi }
+    limits: { memory: 384Mi }
+database:
+  postgres:
+    bundled:
+      resources:
+        requests: { cpu: 50m, memory: 96Mi }
+        limits: { memory: 256Mi }
+# The chart always renders a default ModelConfig from providers.default. Point it at
+# the same Secret and endpoint as kagent/manifests/modelconfig.yaml so it isn't a dangling one.
+providers:
+  default: openAI
+  openAI:
+    provider: OpenAI
+    model: anthropic/claude-haiku-5.5
+    apiKeySecretRef: kagent-openrouter
+    apiKeySecretKey: OPENROUTER_API_KEY
+    config:
+      baseUrl: https://openrouter.ai/api/v1

@@ -2,9 +2,9 @@
 
 [![Demo: a broken invoice with a hidden prompt injection, checked by the agent](docs/demo.png)](docs/demo.mp4)
 
-*67-second demo with voiceover ([docs/demo.mp4](docs/demo.mp4)). It replays real terminal output captured from a run on Claude Haiku; the raw captures are in [`demo/session/`](demo/session/). The video itself is made with [Remotion](https://www.remotion.dev) in [`demo/`](demo/).*
+*77-second demo with voiceover ([docs/demo.mp4](docs/demo.mp4)): architecture, one-command setup, the reviewer trimming unsupported claims, a broken invoice with a hidden prompt injection, and the same evals passing on two runtimes. It replays real terminal output captured from runs on Claude Haiku (waits are cut); the raw captures are in [`demo/session/`](demo/session/). The video itself is made with [Remotion](https://www.remotion.dev) in [`demo/`](demo/).*
 
-AI agents for the French e-invoicing reform (réforme de la facturation électronique 2026) and Peppol. They run on Kubernetes, get their facts and checks from MCP tools, and are tested with evals. The runtime is [ARK](https://github.com/mckinsey/agents-at-scale-ark), McKinsey's Agentic Runtime for Kubernetes. They get their facts from an MCP server instead of from the model's memory.
+AI agents for the French e-invoicing reform (réforme de la facturation électronique 2026) and Peppol. They run on Kubernetes, get their facts and checks from MCP tools, and are tested with evals. The main runtime is [ARK](https://github.com/mckinsey/agents-at-scale-ark), McKinsey's Agentic Runtime for Kubernetes. They get their facts from an MCP server instead of from the model's memory.
 
 - **einvoice-expert** answers questions from a sourced rule base and cites the rules.
 - **einvoice-reviewer** checks those citations (the two run as a sequential team).
@@ -72,10 +72,11 @@ ark query agent/invoice-checker "Vérifie cette facture : $(cat samples/invoices
 | `deploy/` | kind config and the scripted mock-llm values. |
 | `evals/` | 16 eval cases (`cases.json`) and a runner that creates ARK `Query` resources and checks the answers. |
 | `scripts/up.sh` | The one-command bootstrap behind `make up`. |
+| `kagent/` | The same two agents for kagent: ModelConfig, RemoteMCPServer, Agents, Helm values. `make up-kagent`, `evals/run-kagent.mjs`. |
 | `agentspec/` | AgentSpec manifest of the expert agent and its OWASP LLM Top 10 audit report. |
 | `docs/` | Demo video and poster, LinkedIn post draft, CV entry. |
 | `demo/` | Remotion project for the demo video: terminal replay of `demo/session/`, Piper voiceover (CC0 voice). `./scripts/voiceover.sh`, then `npx remotion render Demo`. |
-| `.github/workflows/ci.yml` | CI: unit tests, chart lint, then the full `make up` on kind with the mock LLM. Real-model evals on manual runs. |
+| `.github/workflows/ci.yml` | CI: unit tests, chart lint, then the full `make up` on kind with the mock LLM (green on GitHub's free runner, with `ARK_SLIM`). Real-model evals on manual runs. |
 
 ## Design notes
 
@@ -85,18 +86,26 @@ ark query agent/invoice-checker "Vérifie cette facture : $(cat samples/invoices
 - **Monitoring.** The MCP server exports `mcp_tool_calls_total{tool=...}` and its pods carry the `prometheus.io/*` scrape annotations; set `monitoring.serviceMonitor=true` if the Prometheus Operator is installed. ARK itself reports query phase, duration and token usage on every `Query` (`kubectl get queries`) and supports OpenTelemetry / Langfuse.
 - **Hardening.** The MCP server runs as non-root with a read-only root filesystem and no capabilities. Tools are read-only (`readOnlyHint`). API keys go into a Kubernetes Secret through `--set-string`, never into the repo.
 
+## Same agents on kagent
+
+To show the design isn't tied to one runtime, `einvoice-expert` and `invoice-checker` also run on [kagent](https://kagent.dev) (CNCF sandbox), in the same cluster and against the same MCP server, model and prompts. Only the YAML around them changes. They pass **14/14** of the eval cases that apply to them (`node evals/run-kagent.mjs`); the two ARK-team cases aren't ported. Details, the ARK-to-kagent mapping and why it pins kagent 0.10.6: [`kagent/README.md`](kagent/README.md).
+
+```bash
+OPENROUTER_API_KEY=... make up-kagent
+node evals/run-kagent.mjs
+```
+
 ## Security audit (OWASP LLM Top 10)
 
 `agentspec/agent.yaml` describes the expert agent in [AgentSpec](https://agents-oss.github.io/agentspec/) format, declaring only what is really in place. `make audit` runs the offline `owasp-llm-top10` pack; the last report is in `agentspec/audit-report.txt`.
 
-Result: **C, 66/100** declared (7 of 11 rules pass). The four open findings are real gaps, not tooling noise:
+Result: **C, 72/100** declared (8 of 11 rules pass). The three open findings are real gaps, not tooling noise:
 
 | Rule | Gap | What would close it |
 | --- | --- | --- |
 | LLM01 prompt injection | No input guardrail, only a prompt instruction (and the injection eval case) | A guard model or filter in front of the Query, e.g. an ARK execution engine or gateway |
 | LLM02 output handling | No output filter | Check that each cited rule id exists before returning the answer |
 | LLM04 model DoS | No rate limit | Rate limit at the ARK API / gateway |
-| LLM09 overreliance | Evals exist but don't gate CI | Run `make up` + `make eval` in CI with a real model |
 
 "Verified" stays ungraded: that needs AgentSpec's runtime sidecar, which isn't deployed here.
 

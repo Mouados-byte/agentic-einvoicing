@@ -1,0 +1,12 @@
+# ARK: MCPServer "einvoice-rules". Same MCP server (Deployment + Service in namespace default,
+# deployed by the ARK chart); kagent only registers it, nothing is redeployed.
+apiVersion: kagent.dev/v1alpha2
+kind: RemoteMCPServer
+metadata:
+  name: einvoice-rules
+  namespace: kagent
+spec:
+  description: French e-invoicing rule base, UBL/CII checker and company lookup
+  url: http://einvoice-rules.default.svc.cluster.local/mcp
+  protocol: STREAMABLE_HTTP
+  timeout: 30s

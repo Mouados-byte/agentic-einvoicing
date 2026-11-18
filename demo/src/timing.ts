@@ -2,13 +2,15 @@ import durations from './voiceover-durations.json';
 
 export const FPS = 30;
 const PAD = 1.0; // seconds of silence after each voiceover clip
-export const SCENES = ['intro', 'setup', 'question', 'invoice', 'evals', 'outro'] as const;
+export const SCENES = ['intro', 'architecture', 'setup', 'question', 'invoice', 'portability', 'outro'] as const;
+// Scenes whose on-screen action outlasts their narration get a minimum length (seconds).
+const MIN: Partial<Record<(typeof SCENES)[number], number>> = { setup: 7, question: 12, invoice: 15 };
 export type SceneId = (typeof SCENES)[number];
 
 // Frame where each scene starts and how long it lasts, driven by its voiceover clip.
 export const sceneTiming = SCENES.reduce(
   (acc, id) => {
-    const durationInFrames = Math.ceil((durations[id] + PAD) * FPS);
+    const durationInFrames = Math.ceil(Math.max(durations[id] + PAD, MIN[id] ?? 0) * FPS);
     acc.list[id] = { from: acc.total, durationInFrames };
     acc.total += durationInFrames;
     return acc;

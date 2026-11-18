@@ -33,7 +33,7 @@ spec:
     datasets:
       - name: einvoice-evals
         path: $file:../evals/cases.json
-    ciGate: false   # no CI yet: evals run by hand with `make eval`
+    ciGate: true    # CI runs the mock-mode evals on every push (.github/workflows/ci.yml); the full set on manual runs
   compliance:
     packs:
       - owasp-llm-top10

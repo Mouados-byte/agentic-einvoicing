@@ -9,7 +9,8 @@ const data = {
   teamQuery: read('team-query.txt'),
   injectedLine: read('injected-line.txt'),
   invoiceCheck: read('invoice-check.txt'),
-  evals: up.filter((l) => /^(PASS|FAIL)|passed$/.test(l)).join('\n'),
+  evalsArk: read('evals-ark.txt'),
+  evalsKagent: read('evals-kagent.txt'),
   queries: read('queries.txt'),
 };
 writeFileSync(new URL('../src/session.ts', import.meta.url),

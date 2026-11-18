@@ -12,7 +12,9 @@ export const C = {
 // One step of a replayed session: a typed command, or output streamed line by line.
 export type TermEvent =
   | { at: number; cmd: string }
-  | { at: number; out: string; linesPerSecond?: number; spinner?: number; highlight?: boolean };
+  | { at: number; out: string; linesPerSecond?: number; spinner?: number; highlight?: boolean;
+      /** Struck through from `at` seconds on, to show what a later step removed. */
+      strike?: { at: number; texts: string[] } };
 
 const PROMPT = '~/agentic-einvoicing $ ';
 const TYPE_CPS = 45;
@@ -33,23 +35,39 @@ const Inline: React.FC<{ text: string }> = ({ text }) => (
   </>
 );
 
-const OutputLine: React.FC<{ line: string; highlight?: boolean }> = ({ line, highlight }) => {
+const Struck: React.FC<{ text: string; strike: string[] }> = ({ text, strike }) => {
+  if (!strike.length) return <Inline text={text} />;
+  const re = new RegExp(`(${strike.map((x) => x.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})`);
+  return (
+    <>
+      {text.split(re).map((part, i) =>
+        strike.includes(part)
+          ? <span key={i} style={{ textDecoration: 'line-through', textDecorationThickness: 3, color: C.red, background: 'rgba(248,81,73,0.14)' }}>{part}</span>
+          : <Inline key={i} text={part} />,
+      )}
+    </>
+  );
+};
+
+const OutputLine: React.FC<{ line: string; highlight?: boolean; strike?: string[] }> = ({ line, highlight, strike = [] }) => {
   let color = C.text;
   let weight: number | undefined;
   if (/^==>/.test(line)) { color = C.blue; weight = 700; }
   else if (/^(✓|PASS)/.test(line)) color = C.green;
   else if (/^FAIL/.test(line)) color = C.red;
-  else if (/^\d+\/\d+ passed$/.test(line)) { color = C.green; weight = 700; }
+  else if (/^\d+\/\d+ passed\b/.test(line)) { color = C.green; weight = 700; }
   else if (/^[◆●] /.test(line)) { color = C.magenta; weight = 700; }
   else if (/^🔧 /.test(line)) color = C.cyan;
   else if (/^NAME\s/.test(line)) color = C.dim;
   const style: React.CSSProperties = highlight
     ? { color: '#ffdcd7', background: 'rgba(248,81,73,0.22)', borderLeft: `6px solid ${C.red}`, paddingLeft: 12 }
     : { color, fontWeight: weight };
-  return <div style={{ minHeight: '1.35em', ...style }}><Inline text={line} /></div>;
+  return <div style={{ minHeight: '1.35em', ...style }}><Struck text={line} strike={strike} /></div>;
 };
 
-export const Terminal: React.FC<{ events: TermEvent[]; title: string }> = ({ events, title }) => {
+export const Terminal: React.FC<{ events: TermEvent[]; title: string; inset?: string; fontSize?: number; titleColor?: string }> = ({
+  events, title, inset = '150px 90px 70px 90px', fontSize = 25, titleColor = C.dim,
+}) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const t = frame / fps;
@@ -79,19 +97,20 @@ export const Terminal: React.FC<{ events: TermEvent[]; title: string }> = ({ eve
       return;
     }
     const count = Math.min(lines.length, 1 + Math.floor((t - start) * (ev.linesPerSecond ?? 12)));
-    lines.slice(0, count).forEach((line, j) => rows.push(<OutputLine key={`${i}-${j}`} line={line} highlight={ev.highlight} />));
+    const strike = ev.strike && t >= ev.strike.at ? ev.strike.texts : [];
+    lines.slice(0, count).forEach((line, j) => rows.push(<OutputLine key={`${i}-${j}`} line={line} highlight={ev.highlight} strike={strike} />));
   });
 
   return (
-    <div style={{ position: 'absolute', inset: '150px 90px 70px 90px', borderRadius: 18, overflow: 'hidden',
+    <div style={{ position: 'absolute', inset, borderRadius: 18, overflow: 'hidden',
       border: `1px solid ${C.border}`, background: C.bg, boxShadow: '0 40px 120px rgba(0,0,0,0.55)', display: 'flex', flexDirection: 'column' }}>
       <div style={{ height: 52, background: C.chrome, display: 'flex', alignItems: 'center', padding: '0 22px', gap: 12, flexShrink: 0 }}>
         {['#ff5f57', '#febc2e', '#28c840'].map((c) => <div key={c} style={{ width: 16, height: 16, borderRadius: 8, background: c }} />)}
-        <div style={{ flex: 1, textAlign: 'center', color: C.dim, fontFamily, fontSize: 22, marginRight: 76 }}>{title}</div>
+        <div style={{ flex: 1, textAlign: 'center', color: titleColor, fontFamily, fontSize: 22, marginRight: 76 }}>{title}</div>
       </div>
       {/* Bottom-anchored like a real terminal: when output overflows, the oldest lines scroll off the top. */}
       <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end',
-        padding: '20px 30px 26px', fontFamily, fontSize: 25, fontVariantLigatures: 'none', position: 'relative', lineHeight: 1.35, whiteSpace: 'pre-wrap', wordBreak: 'break-word', color: C.text }}>
+        padding: '20px 30px 26px', fontFamily, fontSize, fontVariantLigatures: 'none', position: 'relative', lineHeight: 1.35, whiteSpace: 'pre-wrap', wordBreak: 'break-word', color: C.text }}>
         <div style={{ minHeight: '100%', flexShrink: 0 }}>{rows}</div>
         <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 34, background: `linear-gradient(${C.bg}, rgba(13,17,23,0))` }} />
       </div>
