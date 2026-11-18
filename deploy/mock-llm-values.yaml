@@ -1,0 +1,66 @@
+# Scripted OpenAI-compatible mock (github.com/dwmkerr/mock-llm) so the demo runs
+# with no API key. It follows the real tool-calling path: the agent asks for an MCP
+# tool call, ARK runs it against the einvoice-rules server, and the mock answers
+# once the tool result contains the expected rule id. Rules: last match wins.
+# Two questions are scripted (PME deadline, Peppol id); anything else gets a fallback.
+ark:
+  model:
+    enabled: true
+    name: default
+    type: completions
+    provider: openai
+    model: gpt-4.1-mini
+    apiKey: mock-api-key
+    pollInterval: 10s
+resources:
+  requests: { cpu: 50m, memory: 64Mi }
+  limits: { cpu: 200m, memory: 256Mi }
+config:
+  rules:
+    - path: "/v1/models"
+      method: GET
+      response:
+        status: 200
+        content: '{"object":"list","data":[{"id":"gpt-4.1-mini","object":"model","owned_by":"openai"}]}'
+
+    # Fallback for unscripted questions.
+    - path: "/v1/chat/completions"
+      response:
+        status: 200
+        content: '{"choices":[{"message":{"role":"assistant","content":"[mock] This question is not scripted. Set OPENAI_API_KEY or ANTHROPIC_API_KEY and re-run make up for real answers."},"finish_reason":"stop"}],"usage":{"prompt_tokens":1,"completion_tokens":1,"total_tokens":2}}'
+
+    # --- einvoice-expert, step 1: call the MCP search tool
+    - path: "/v1/chat/completions"
+      match: "contains(body.messages[0].content || '', 'rules expert') && body.messages[-1].role == 'user' && contains(body.messages[-1].content || '', 'PME')"
+      response:
+        status: 200
+        content: '{"choices":[{"message":{"role":"assistant","tool_calls":[{"id":"call_1","type":"function","function":{"name":"einvoice-rules-search-rules","arguments":"{\"query\":\"PME émission calendrier\"}"}}]},"finish_reason":"tool_calls"}],"usage":{"prompt_tokens":10,"completion_tokens":5,"total_tokens":15}}'
+    - path: "/v1/chat/completions"
+      match: "contains(body.messages[0].content || '', 'rules expert') && body.messages[-1].role == 'user' && contains(body.messages[-1].content || '', 'Peppol')"
+      response:
+        status: 200
+        content: '{"choices":[{"message":{"role":"assistant","tool_calls":[{"id":"call_1","type":"function","function":{"name":"einvoice-rules-search-rules","arguments":"{\"query\":\"identifiant Peppol\"}"}}]},"finish_reason":"tool_calls"}],"usage":{"prompt_tokens":10,"completion_tokens":5,"total_tokens":15}}'
+
+    # --- einvoice-expert, step 2: answer once the tool returned the right rule
+    - path: "/v1/chat/completions"
+      match: "contains(body.messages[0].content || '', 'rules expert') && body.messages[-1].role == 'tool' && contains(body.messages[-1].content || '', 'FR-CAL-02')"
+      response:
+        status: 200
+        content: '{"choices":[{"message":{"role":"assistant","content":"Une PME doit émettre ses factures électroniques à partir du 1er septembre 2027 ; elle doit déjà pouvoir en recevoir depuis le 1er septembre 2026 [FR-CAL-02] [FR-CAL-01]."},"finish_reason":"stop"}],"usage":{"prompt_tokens":40,"completion_tokens":20,"total_tokens":60}}'
+    - path: "/v1/chat/completions"
+      match: "contains(body.messages[0].content || '', 'rules expert') && body.messages[-1].role == 'tool' && contains(body.messages[-1].content || '', 'FR-PEP-02')"
+      response:
+        status: 200
+        content: '{"choices":[{"message":{"role":"assistant","content":"Pour le B2B domestique, une entreprise française est adressée sur Peppol avec le schéma ICD 0225 (FRCTC) et son SIREN, par exemple 0225:123456789 [FR-PEP-02]."},"finish_reason":"stop"}],"usage":{"prompt_tokens":40,"completion_tokens":20,"total_tokens":60}}'
+
+    # --- einvoice-reviewer (team step 2): return the checked answer
+    - path: "/v1/chat/completions"
+      match: "contains(body.messages[0].content || '', 'compliance reviewer') && contains(to_string(body.messages), 'FR-CAL-02')"
+      response:
+        status: 200
+        content: '{"choices":[{"message":{"role":"assistant","content":"Vérifié : les PME émettent en électronique à partir du 1er septembre 2027 et reçoivent depuis le 1er septembre 2026 [FR-CAL-02] [FR-CAL-01]."},"finish_reason":"stop"}],"usage":{"prompt_tokens":40,"completion_tokens":20,"total_tokens":60}}'
+    - path: "/v1/chat/completions"
+      match: "contains(body.messages[0].content || '', 'compliance reviewer') && contains(to_string(body.messages), 'FR-PEP-02')"
+      response:
+        status: 200
+        content: '{"choices":[{"message":{"role":"assistant","content":"Vérifié : schéma ICD 0225 (FRCTC) + SIREN, par exemple 0225:123456789 [FR-PEP-02]."},"finish_reason":"stop"}],"usage":{"prompt_tokens":40,"completion_tokens":20,"total_tokens":60}}'

@@ -1,0 +1,32 @@
+{{- if .Values.model.create }}
+{{- if not .Values.model.apiKey }}{{ fail "model.create=true needs model.apiKey" }}{{ end }}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ .Values.model.name }}-model-key
+  labels:
+    {{- include "einvoice.labels" . | nindent 4 }}
+type: Opaque
+stringData:
+  apiKey: {{ .Values.model.apiKey | quote }}
+---
+apiVersion: ark.mckinsey.com/v1alpha1
+kind: Model
+metadata:
+  name: {{ .Values.model.name }}
+  labels:
+    {{- include "einvoice.labels" . | nindent 4 }}
+spec:
+  provider: {{ .Values.model.provider }}
+  model:
+    value: {{ .Values.model.model }}
+  config:
+    {{ .Values.model.provider }}:
+      baseUrl:
+        value: {{ .Values.model.baseUrl | quote }}
+      apiKey:
+        valueFrom:
+          secretKeyRef:
+            name: {{ .Values.model.name }}-model-key
+            key: apiKey
+{{- end }}

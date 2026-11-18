@@ -1,0 +1,57 @@
+
+  AgentSpec Audit — einvoice-expert
+  ───────────────────────────────────
+  Declared score :  C  66/100  — what your spec says
+  Verified       : Not graded (coverage 0%)  — what evidence proves
+  Rules : 7 passed / 4 failed / 11 total
+
+  Category Scores
+    owasp-llm-top10           64% █████████████░░░░░░░
+
+  Violations (4)
+
+  [high] [I][E][O] SEC-LLM-01 — Prompt injection guard: input guardrail required
+    No input guardrail configured. Prompt injection attacks are unmitigated.
+    Path: /spec/guardrails/input
+    → Add a prompt-injection guardrail to spec.guardrails.input
+    https://owasp.org/www-project-top-10-for-large-language-model-applications/#llm01-prompt-injection
+
+  [high] [E][O] SEC-LLM-02 — Insecure output handling: output guardrail required
+    No output guardrail configured. LLM outputs are not sanitized.
+    Path: /spec/guardrails/output
+    → Add a toxicity-filter or hallucination-detector to spec.guardrails.output
+    https://owasp.org/www-project-top-10-for-large-language-model-applications/#llm02-insecure-output-handling
+
+  [medium] [I] SEC-LLM-04 — Model DoS: rate limiting configured
+    No rate limiting declared.
+    Path: /spec/api/rateLimit
+    → Add spec.api.rateLimit.requestsPerMinute
+    https://owasp.org/www-project-top-10-for-large-language-model-applications/#llm04-model-denial-of-service
+
+  [medium] [I][O] SEC-LLM-09 — Overreliance: evaluation + CI gate configured
+    Evaluation CI gate is not enabled.
+    Path: /spec/evaluation
+    → Configure spec.evaluation.datasets (or spec.evaluation.live) and set spec.evaluation.ciGate: true
+    https://owasp.org/www-project-top-10-for-large-language-model-applications/#llm09-overreliance
+
+  Unverified (11)
+    – SEC-LLM-01 (high): no_evidence
+    – SEC-LLM-02 (high): no_evidence
+    – SEC-LLM-03 (medium): no_evidence
+    – SEC-LLM-04 (medium): no_evidence
+    – SEC-LLM-05 (medium): no_evidence
+    – SEC-LLM-06 (critical): no_evidence
+    – SEC-LLM-07 (medium): no_evidence
+    – SEC-LLM-08 (high): no_approval_token_evidence
+    – SEC-LLM-09 (medium): no_evidence
+    – SEC-LLM-10 (high): no_evidence
+    – TOOL-01 (high): no_calls_observed
+
+  Evidence Breakdown
+    [I] Independent    5/8  (gateway, sidecar, operator)
+    [E] Evidence point 4/6  (SDK calls your agent code wires)
+    [O] Offline        3/6  (agent.lock review)
+    [D] Declared       3/3  (manifest declarations)
+
+  ⚠ sidecar absent: not verifiable — rules that need an independent or evidence-point source cannot be proved by an offline audit; read the sidecar's /gap
+

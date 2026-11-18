@@ -1,0 +1,39 @@
+# AgentSpec description of the einvoice-expert agent, used only for `agentspec audit`.
+# The deployed agent is chart/einvoice-agents/templates/agents.yaml; keep the two in sync.
+# Declares what is actually in place: no guardrail is listed that ARK does not enforce.
+apiVersion: agentspec.io/v1
+kind: AgentSpec
+metadata:
+  name: einvoice-expert
+  version: 0.1.0
+  description: "Answers French e-invoicing / Peppol questions from an MCP rule base, citing rule ids"
+  tags: [ark, mcp, e-invoicing, peppol]
+  author: "Mouad Imam"
+  license: MIT
+spec:
+  model:
+    provider: openai
+    id: gpt-4.1-mini
+    apiKey: $secret:default-model-key   # Kubernetes Secret created by the Helm chart
+    parameters:
+      temperature: 0
+      maxTokens: 600
+  prompts:
+    system: $file:prompts/system.md
+    fallback: "I can't answer right now. Please check impots.gouv.fr."
+    hotReload: false
+  tools:
+    - name: einvoice-rules-search-rules
+      type: mcp
+      description: "Search the e-invoicing rule base (read-only)"
+      annotations:
+        readOnlyHint: true
+        destructiveHint: false
+  evaluation:
+    datasets:
+      - name: einvoice-evals
+        path: $file:../evals/cases.json
+    ciGate: false   # no CI yet: evals run by hand with `make eval`
+  compliance:
+    packs:
+      - owasp-llm-top10

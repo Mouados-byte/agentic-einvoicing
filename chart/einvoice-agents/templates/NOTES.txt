@@ -1,0 +1,5 @@
+Ask a question:
+  ark query agent/einvoice-expert "Quand une PME doit-elle émettre ses factures électroniques ?"
+  ark query team/einvoice-team "Quel identifiant Peppol pour une entreprise française ?"
+Check tools discovered from the MCP server:
+  kubectl get tools -l mcp/server=einvoice-rules -n {{ .Release.Namespace }}

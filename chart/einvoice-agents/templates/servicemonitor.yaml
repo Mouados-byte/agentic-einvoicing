@@ -1,0 +1,15 @@
+{{- if .Values.monitoring.serviceMonitor }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: einvoice-rules
+  labels:
+    {{- include "einvoice.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: einvoice-rules
+  endpoints:
+    - port: http
+      path: /metrics
+{{- end }}

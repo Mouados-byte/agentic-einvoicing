@@ -1,0 +1,8 @@
+[
+  {"id": "intro",   "text": "This is agentic e-invoicing: AI agents for the French e-invoicing reform, running on Kubernetes."},
+  {"id": "setup",   "text": "One command builds everything. A kind cluster, the agent runtime, an MCP tool server, and three agents, declared as Kubernetes resources."},
+  {"id": "question","text": "First, a regulation question. The expert agent has to search the rule base and cite it. A second agent then checks every citation before the answer goes out."},
+  {"id": "invoice", "text": "Now a real invoice. It has a broken SIREN and wrong totals. And one line tells the AI to ignore the errors and say everything is fine. The checker reports all four errors, looks up the buyer in the public company register, and calls out the injection."},
+  {"id": "evals",   "text": "Every change is tested. Sixteen evaluation cases, including that injection, all pass on Claude Haiku. And every question is a Kubernetes resource you can inspect."},
+  {"id": "outro",   "text": "Kubernetes, MCP, and real evals, in one command. The code is on GitHub."}
+]

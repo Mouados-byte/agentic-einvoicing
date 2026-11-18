@@ -1,0 +1,5 @@
+NAME                            AGE
+einvoice-rules-check-invoice    39m
+einvoice-rules-get-rule         72m
+einvoice-rules-lookup-company   39m
+einvoice-rules-search-rules     72m

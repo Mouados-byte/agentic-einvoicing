@@ -1,0 +1,83 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: einvoice-rules
+  labels:
+    {{- include "einvoice.labels" . | nindent 4 }}
+    app.kubernetes.io/name: einvoice-rules
+spec:
+  replicas: {{ .Values.mcpServer.replicas }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: einvoice-rules
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: einvoice-rules
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8080"
+        prometheus.io/path: /metrics
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile: { type: RuntimeDefault }
+      containers:
+        - name: mcp
+          image: {{ .Values.mcpServer.image }}
+          imagePullPolicy: {{ .Values.mcpServer.imagePullPolicy }}
+          ports:
+            - { name: http, containerPort: 8080 }
+          readinessProbe:
+            httpGet: { path: /healthz, port: http }
+          livenessProbe:
+            httpGet: { path: /healthz, port: http }
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities: { drop: [ALL] }
+          {{- with .Values.mcpServer.extraCaConfigMap }}
+          env:
+            - { name: NODE_EXTRA_CA_CERTS, value: /etc/ssl/host-ca/ca-certificates.crt }
+          volumeMounts:
+            - { name: host-ca, mountPath: /etc/ssl/host-ca, readOnly: true }
+          {{- end }}
+          resources:
+            {{- toYaml .Values.mcpServer.resources | nindent 12 }}
+      {{- with .Values.mcpServer.extraCaConfigMap }}
+      volumes:
+        - name: host-ca
+          configMap: { name: {{ . }} }
+      {{- end }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: einvoice-rules
+  labels:
+    {{- include "einvoice.labels" . | nindent 4 }}
+    app.kubernetes.io/name: einvoice-rules
+spec:
+  selector:
+    app.kubernetes.io/name: einvoice-rules
+  ports:
+    - { name: http, port: 80, targetPort: http }
+---
+# ARK connects to the server, discovers its tools and creates one Tool per function:
+# einvoice-rules-search-rules, einvoice-rules-get-rule
+apiVersion: ark.mckinsey.com/v1alpha1
+kind: MCPServer
+metadata:
+  name: einvoice-rules
+  labels:
+    {{- include "einvoice.labels" . | nindent 4 }}
+spec:
+  address:
+    valueFrom:
+      serviceRef:
+        name: einvoice-rules
+        port: http
+        path: /mcp
+  transport: http
+  timeout: 30s
+  description: French e-invoicing (réforme 2026) and Peppol rule base

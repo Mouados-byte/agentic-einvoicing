@@ -1,0 +1,43 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      real_model:
+        description: "Run the full eval set on a real model (needs the OPENROUTER_API_KEY secret, costs a few cents)"
+        type: boolean
+        default: false
+
+jobs:
+  unit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - run: make test
+      - run: helm lint chart/einvoice-agents
+      - run: bash -n scripts/up.sh
+
+  e2e:
+    # Full one-command setup on a kind cluster: ARK, MCP server, agents, then the evals.
+    # Mock LLM by default; real model only on a manual run with real_model=true.
+    needs: unit
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    env:
+      OPENROUTER_API_KEY: ${{ (github.event_name == 'workflow_dispatch' && inputs.real_model) && secrets.OPENROUTER_API_KEY || '' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - run: make up
+      - name: Cluster state on failure
+        if: failure()
+        run: |
+          kubectl get pods -A
+          kubectl get agents,teams,models,mcpservers,queries
+          kubectl -n ark-system logs deploy/ark-completions --tail=100 || true

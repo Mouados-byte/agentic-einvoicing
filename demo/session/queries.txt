@@ -1,0 +1,4 @@
+NAME                      TYPE   PHASE   DURATION        AGE
+cli-query-1794966509076   user   done    7.482200334s    3m34s
+cli-query-1794966530115   user   done    12.213208303s   3m13s
+cli-query-1794966708927   user   done    7.270488699s    15s

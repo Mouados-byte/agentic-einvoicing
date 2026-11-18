@@ -1,0 +1,7 @@
+NAME                                       MODEL     AVAILABLE   AGE
+agent.ark.mckinsey.com/einvoice-expert     default   True        75m
+agent.ark.mckinsey.com/einvoice-reviewer   default   True        75m
+agent.ark.mckinsey.com/invoice-checker     default   True        42m
+
+NAME                                  STRATEGY     AVAILABLE   AGE
+team.ark.mckinsey.com/einvoice-team   sequential   True        75m

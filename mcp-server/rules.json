@@ -1,0 +1,86 @@
+[
+  {
+    "id": "FR-CAL-01",
+    "title": "Calendrier de la réforme : réception",
+    "rule": "Depuis le 1er septembre 2026, toutes les entreprises assujetties à la TVA établies en France doivent pouvoir recevoir des factures électroniques, quelle que soit leur taille.",
+    "keywords": ["calendrier", "date", "réception", "recevoir", "2026", "septembre", "obligation", "deadline", "receive"],
+    "source": "https://www.economie.gouv.fr/tout-savoir-sur-la-facturation-%C3%A9lectronique-pour-les-entreprises"
+  },
+  {
+    "id": "FR-CAL-02",
+    "title": "Calendrier de la réforme : émission",
+    "rule": "Obligation d'émettre des factures électroniques : grandes entreprises et ETI au 1er septembre 2026 ; PME, TPE et micro-entreprises au 1er septembre 2027.",
+    "keywords": ["calendrier", "date", "émission", "émettre", "pme", "tpe", "eti", "grande entreprise", "micro", "2027", "2026", "issue", "deadline"],
+    "source": "https://www.economie.gouv.fr/tout-savoir-sur-la-facturation-%C3%A9lectronique-pour-les-entreprises"
+  },
+  {
+    "id": "FR-PA-01",
+    "title": "Plateformes agréées (PA, ex-PDP)",
+    "rule": "Les factures B2B domestiques transitent par une plateforme agréée (PA, anciennement PDP) immatriculée par la DGFiP. Chaque entreprise doit choisir au moins une PA pour recevoir ses factures. Le portail public (PPF) ne sert plus de plateforme de facturation gratuite : il gère l'annuaire central et le concentrateur de données fiscales.",
+    "keywords": ["pa", "pdp", "plateforme agréée", "plateforme", "ppf", "portail public", "dgfip", "choisir", "platform"],
+    "source": "https://www.impots.gouv.fr/professionnel/je-passe-la-facturation-electronique"
+  },
+  {
+    "id": "FR-ANN-01",
+    "title": "Annuaire central",
+    "rule": "L'annuaire central (géré par l'AIFE et la DGFiP) indique pour chaque SIREN (ou SIRET, ou code de routage) la plateforme agréée qui reçoit ses factures. Une PA consulte l'annuaire pour router une facture vers la PA du destinataire.",
+    "keywords": ["annuaire", "siren", "siret", "routage", "adressage", "directory", "aife"],
+    "source": "https://www.impots.gouv.fr/professionnel/je-passe-la-facturation-electronique"
+  },
+  {
+    "id": "FR-FMT-01",
+    "title": "Formats du socle",
+    "rule": "Les trois formats du socle sont UBL, UN/CEFACT CII et Factur-X (PDF/A-3 avec XML CII embarqué). Tous respectent la norme sémantique européenne EN 16931. Un PDF simple (sans données structurées) n'est pas une facture électronique.",
+    "keywords": ["format", "ubl", "cii", "factur-x", "facturx", "pdf", "en 16931", "xml", "socle", "norme"],
+    "source": "https://www.impots.gouv.fr/professionnel/je-passe-la-facturation-electronique"
+  },
+  {
+    "id": "FR-MEN-01",
+    "title": "Nouvelles mentions obligatoires",
+    "rule": "Quatre nouvelles mentions s'ajoutent aux mentions existantes : le SIREN du client, l'adresse de livraison si elle diffère de l'adresse du client, la nature des opérations (livraison de biens, prestation de services ou les deux) et, le cas échéant, l'option pour le paiement de la TVA d'après les débits.",
+    "keywords": ["mention", "mentions obligatoires", "siren", "adresse de livraison", "nature", "biens", "services", "débits", "tva"],
+    "source": "https://bofip.impots.gouv.fr/bofip/14246-PGP.html"
+  },
+  {
+    "id": "FR-ERP-01",
+    "title": "E-reporting",
+    "rule": "Les opérations hors facturation électronique domestique (ventes B2C, opérations B2B internationales : achats et ventes avec l'étranger) font l'objet d'un e-reporting des données de transaction via la plateforme agréée. Les données de paiement sont aussi transmises pour les prestations de services soumises à la TVA à l'encaissement.",
+    "keywords": ["e-reporting", "ereporting", "b2c", "international", "étranger", "export", "paiement", "encaissement", "transaction"],
+    "source": "https://www.impots.gouv.fr/professionnel/je-passe-la-facturation-electronique"
+  },
+  {
+    "id": "FR-STA-01",
+    "title": "Statuts du cycle de vie obligatoires",
+    "rule": "Certains statuts du cycle de vie doivent être transmis à l'administration : Déposée, Rejetée, Refusée et Encaissée. Les autres statuts (Prise en charge, Approuvée, Litige, etc.) sont facultatifs.",
+    "keywords": ["statut", "cycle de vie", "déposée", "rejetée", "refusée", "encaissée", "lifecycle", "status"],
+    "source": "https://www.impots.gouv.fr/professionnel/je-passe-la-facturation-electronique"
+  },
+  {
+    "id": "FR-SAN-01",
+    "title": "Sanctions",
+    "rule": "Amende de 15 € par facture non émise sous forme électronique (plafond 15 000 € par an) et de 250 € par manquement à l'e-reporting (plafond 15 000 € par an), avec une tolérance prévue pour une première infraction régularisée.",
+    "keywords": ["sanction", "amende", "pénalité", "15", "250", "penalty", "fine"],
+    "source": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000049054858"
+  },
+  {
+    "id": "FR-PEP-01",
+    "title": "Peppol en France",
+    "rule": "Depuis juillet 2025, la DGFiP est l'autorité Peppol (Peppol Authority) pour la France. Les plateformes agréées peuvent utiliser le réseau Peppol (AS4) pour s'échanger les factures entre elles ; l'entreprise ne se connecte pas directement à Peppol, elle passe par sa PA.",
+    "keywords": ["peppol", "authority", "autorité", "as4", "réseau", "interopérabilité", "access point", "point d'accès"],
+    "source": "https://peppol.org/members/peppol-authorities/"
+  },
+  {
+    "id": "FR-PEP-02",
+    "title": "Identifiant Peppol des entreprises françaises",
+    "rule": "Pour le B2B domestique, l'adresse Peppol d'une entreprise française utilise le schéma ICD 0225 (FRCTC), avec comme valeur le SIREN, éventuellement complété du SIRET ou d'un code de routage (ex. 0225:123456789). Les schémas 0002 (SIREN) et 0009 (SIRET) existent aussi dans la liste ICD.",
+    "keywords": ["peppol", "identifiant", "id", "icd", "0225", "0009", "0002", "frctc", "endpoint", "adresse électronique", "scheme"],
+    "source": "https://docs.peppol.eu/edelivery/codelists/"
+  },
+  {
+    "id": "FR-B2G-01",
+    "title": "Factures au secteur public (B2G)",
+    "rule": "Les factures adressées à l'État, aux collectivités et aux établissements publics passent par Chorus Pro, obligatoire pour toutes les entreprises depuis le 1er janvier 2020. La réforme 2026 vise le B2B ; le B2G reste sur Chorus Pro.",
+    "keywords": ["b2g", "chorus", "chorus pro", "secteur public", "état", "collectivité", "public"],
+    "source": "https://communaute.chorus-pro.gouv.fr/"
+  }
+]

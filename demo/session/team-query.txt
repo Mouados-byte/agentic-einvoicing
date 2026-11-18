@@ -1,0 +1,11 @@
+◆ einvoice-expert
+🔧 einvoice-rules-search-rules
+
+Une PME doit émettre ses factures électroniques à partir du 1er septembre 2027, alors que les grandes entreprises et ETI y sont tenues dès le 1er septembre 2026 [FR-CAL-02]. Cette échéance concerne l'émission uniquement. Depuis le 1er septembre 2026, toutes les entreprises assujetties à la TVA établies en France doivent pouvoir recevoir des factures électroniques, quelle que soit leur taille [FR-CAL-01]. Pour les factures adressées au secteur public, Chorus Pro reste le canal utilisé [FR-B2G-01]. Pour confirmer les dates applicables à votre situation, consultez impots.gouv.fr.
+
+◆ einvoice-reviewer
+🔧 einvoice-rules-search-rules
+🔧 einvoice-rules-get-rule
+🔧 einvoice-rules-get-rule
+
+Une PME doit émettre ses factures électroniques à partir du 1er septembre 2027, alors que les grandes entreprises et ETI y sont tenues dès le 1er septembre 2026 [FR-CAL-02]. Depuis le 1er septembre 2026, toutes les entreprises assujetties à la TVA établies en France doivent pouvoir recevoir des factures électroniques, quelle que soit leur taille [FR-CAL-01]. Pour les factures adressées au secteur public, Chorus Pro reste le canal utilisé [FR-B2G-01].

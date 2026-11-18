@@ -1,0 +1,17 @@
+# Strategic-merge patch applied by scripts/up.sh to ark-controller and ark-completions
+# (CONTAINER is replaced with the container name). Lets them call LLM APIs through a
+# TLS-inspecting proxy by trusting the host's CA bundle (ConfigMap host-ca-bundle).
+spec:
+  template:
+    spec:
+      volumes:
+        - name: host-ca-bundle
+          configMap: { name: host-ca-bundle }
+      containers:
+        - name: CONTAINER
+          volumeMounts:
+            - { name: host-ca-bundle, mountPath: /etc/ssl/host-ca, readOnly: true }
+          env:
+            - { name: SSL_CERT_FILE, value: /etc/ssl/host-ca/ca-certificates.crt }
+            - { name: REQUESTS_CA_BUNDLE, value: /etc/ssl/host-ca/ca-certificates.crt }
+            - { name: NODE_EXTRA_CA_CERTS, value: /etc/ssl/host-ca/ca-certificates.crt }

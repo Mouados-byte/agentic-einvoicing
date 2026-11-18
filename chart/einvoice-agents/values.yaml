@@ -1,0 +1,28 @@
+mcpServer:
+  image: einvoice-rules-mcp:0.1.0   # built and loaded into kind by scripts/up.sh
+  imagePullPolicy: IfNotPresent
+  replicas: 1
+  # ConfigMap holding extra root CAs (key ca-certificates.crt) for lookup_company's outbound
+  # HTTPS behind a TLS-inspecting proxy. scripts/up.sh sets it when the host has extra CAs.
+  extraCaConfigMap: ""
+  resources:
+    requests: { cpu: 20m, memory: 64Mi }
+    limits: { cpu: 200m, memory: 128Mi }
+
+# Agents use the ARK model named here. scripts/up.sh creates "default":
+# a scripted mock-llm when no API key is set, a real provider otherwise.
+modelRef: default
+
+# Set create=true to let this chart create the model (and its secret).
+model:
+  create: false
+  name: default
+  provider: openai          # openai | anthropic
+  model: gpt-4.1-mini
+  baseUrl: https://api.openai.com/v1
+  apiKey: ""                # pass with --set-string model.apiKey=...; never commit it
+
+monitoring:
+  # Prometheus scrape annotations on the MCP server pods are always set.
+  # Turn this on if the Prometheus Operator CRDs are installed.
+  serviceMonitor: false
