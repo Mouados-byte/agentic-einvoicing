@@ -6,7 +6,7 @@
 
 AI agents for the French e-invoicing reform (réforme de la facturation électronique 2026) and Peppol. They run on Kubernetes, get their facts and checks from MCP tools, and are tested with evals. The main runtime is [ARK](https://github.com/mckinsey/agents-at-scale-ark), McKinsey's Agentic Runtime for Kubernetes. They get their facts from an MCP server instead of from the model's memory.
 
-- **einvoice-expert** answers questions from a sourced rule base and cites the rules.
+- **einvoice-expert** answers questions from a small, sourced demo rule base (12 rules, not full coverage of the reform) and cites the rules.
 - **einvoice-reviewer** checks those citations (the two run as a sequential team).
 - **invoice-checker** checks a real invoice, UBL or CII (Factur-X XML): SIREN check digits, the new mandatory buyer SIREN, the Peppol `0225` address against the SIREN, French postcodes and the EN 16931 total rules. It then looks both companies up live in the public French company register, and flags a closed one.
 
@@ -70,11 +70,11 @@ ark query agent/invoice-checker "Vérifie cette facture : $(cat samples/invoices
 | `samples/invoices/` | Synthetic UBL and CII invoices: valid, missing buyer SIREN, broken totals, prompt injection. |
 | `chart/einvoice-agents/` | Helm chart: MCP server Deployment/Service, `MCPServer`, three `Agent`s, a sequential `Team`, optional `Model`, optional `ServiceMonitor`. |
 | `deploy/` | kind config and the scripted mock-llm values. |
-| `evals/` | 16 eval cases (`cases.json`) and a runner that creates ARK `Query` resources and checks the answers. |
+| `evals/` | 16 eval cases, the model comparison (`compare-models.mjs`, `results/`) (`cases.json`) and a runner that creates ARK `Query` resources and checks the answers. |
 | `scripts/up.sh` | The one-command bootstrap behind `make up`. |
 | `kagent/` | The same two agents for kagent: ModelConfig, RemoteMCPServer, Agents, Helm values. `make up-kagent`, `evals/run-kagent.mjs`. |
 | `agentspec/` | AgentSpec manifest of the expert agent and its OWASP LLM Top 10 audit report. |
-| `docs/` | Demo video and poster, LinkedIn post draft, CV entry. |
+| `docs/` | Demo video and poster. |
 | `demo/` | Remotion project for the demo video: terminal replay of `demo/session/`, Piper voiceover (CC0 voice). `./scripts/voiceover.sh`, then `npx remotion render Demo`. |
 | `.github/workflows/ci.yml` | CI: unit tests, chart lint, then the full `make up` on kind with the mock LLM (green on GitHub's free runner, with `ARK_SLIM`). Real-model evals on manual runs. |
 
@@ -85,6 +85,21 @@ ark query agent/invoice-checker "Vérifie cette facture : $(cat samples/invoices
 - **Evals.** ARK 0.1.73 has no evaluation CRD any more, so `evals/run.mjs` runs each case as a `Query` and checks the response with regexes: expected facts, cited rule ids, an out-of-scope question that must be refused, and a prompt-injection case that must not leak the system prompt. `--mock` runs only the four cases the mock knows.
 - **Monitoring.** The MCP server exports `mcp_tool_calls_total{tool=...}` and its pods carry the `prometheus.io/*` scrape annotations; set `monitoring.serviceMonitor=true` if the Prometheus Operator is installed. ARK itself reports query phase, duration and token usage on every `Query` (`kubectl get queries`) and supports OpenTelemetry / Langfuse.
 - **Hardening.** The MCP server runs as non-root with a read-only root filesystem and no capabilities. Tools are read-only (`readOnlyHint`). API keys go into a Kubernetes Secret through `--set-string`, never into the repo.
+
+## Which model?
+
+`node evals/compare-models.mjs` runs the 16 evals on several models through OpenRouter, with the same agents, prompts and tools, and reports accuracy, cost and latency ([full results](evals/results/model-comparison.md), 2026-11-18, $0.55 in total):
+
+| Model | Passed | Cost per 100 questions | Latency p50 / p95 |
+| --- | --- | --- | --- |
+| `anthropic/claude-haiku-5.5` | 16/16 | $0.12 | 3.4 s / 11.3 s |
+| `deepseek/deepseek-v4.1-flash` | 15/16\* | $0.07 | 6.0 s / 12.8 s |
+| `google/gemini-3.1-flash-lite` | 15/16 | $0.15 | 2.3 s / 4.9 s |
+| `anthropic/claude-sonnet-5.5` | 15/16\* | $2.41 | 8.1 s / 13.5 s |
+| `mistralai/mistral-large-2512` | 14/16 | $0.27 | 3.4 s / 20.0 s |
+| `openai/gpt-5-mini` | 14/16 | $0.41 | 17.1 s / 44.3 s |
+
+\* One failure was an over-strict eval rule, fixed since; see the results file. For this task the cheapest Claude model is also the most accurate: Sonnet costs 20 times more for no gain.
 
 ## Same agents on kagent
 

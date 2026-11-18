@@ -114,9 +114,7 @@
       "INSEE"
     ],
     "reject": [
-      "BR-CO-10",
-      "BR-CO-15",
-      "SIREN_MISSING"
+      "NOT OK"
     ]
   },
   {
@@ -131,9 +129,7 @@
       "INSEE"
     ],
     "reject": [
-      "BR-CO-10",
-      "BR-CO-15",
-      "ENDPOINT_MISMATCH"
+      "NOT OK"
     ]
   },
   {

@@ -4,19 +4,12 @@
 // Usage: node evals/run-kagent.mjs   (KAGENT_URL=http://host:8083 to skip the port-forward)
 import { spawn } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
-import { readFileSync } from 'node:fs';
+import { check, inputFor, loadCases } from './lib.mjs';
 
 const ns = process.env.KAGENT_NAMESPACE ?? 'kagent';
 const agents = new Set(['agent/einvoice-expert', 'agent/invoice-checker']);
-const cases = JSON.parse(readFileSync(new URL('./cases.json', import.meta.url), 'utf8')).filter((c) => agents.has(c.target));
+const cases = loadCases().filter((c) => agents.has(c.target));
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
-
-// Same rules as evals/run.mjs: every `expect` regex must match (case-insensitive),
-// no `reject` string may appear verbatim.
-const check = (c, answer) => [
-  ...(c.expect ?? []).filter((p) => !new RegExp(p, 'i').test(answer)).map((p) => `missing /${p}/`),
-  ...(c.reject ?? []).filter((p) => answer.includes(p)).map((p) => `leaked "${p}"`),
-];
 
 async function controllerUrl() {
   if (process.env.KAGENT_URL) return { url: process.env.KAGENT_URL, stop: () => {} };
@@ -34,9 +27,7 @@ async function controllerUrl() {
 // A2A JSON-RPC message/send; the reply is a Task (answer in artifacts) or a Message.
 async function ask(base, c) {
   const name = c.target.split('/')[1];
-  const text = c.inputFile
-    ? `${c.question}\n\n${readFileSync(new URL(`../${c.inputFile}`, import.meta.url), 'utf8')}`
-    : c.question;
+  const text = inputFor(c);
   const res = await fetch(`${base}/api/a2a/${ns}/${name}/`, {
     method: 'POST',
     headers: { 'content-type': 'application/json', 'x-user-id': 'einvoice-evals' },
