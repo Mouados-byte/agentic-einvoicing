@@ -49,6 +49,9 @@ if [[ -n "${ARK_SLIM:-}" ]]; then
   for d in ark-dashboard ark-mcp file-gateway-file-api file-gateway-filesystem-mcp file-gateway-versitygw noah-mcp kubernetes-mcp-server; do
     kubectl scale deploy "$d" --replicas=0 >/dev/null 2>&1 && echo "scaled $d to 0" || true
   done
+  # Their MCPServer/Agent resources would keep the controller busy retrying dead endpoints.
+  kubectl delete mcpserver ark-mcp file-gateway kubernetes-mcp-server noah-mcp --ignore-not-found --wait=false
+  kubectl delete agent noah --ignore-not-found --wait=false
 fi
 
 step "Building and loading the MCP server image"
@@ -109,7 +112,7 @@ for attempt in 1 2 3; do
 done
 kubectl rollout restart deploy/einvoice-rules >/dev/null   # pick up a rebuilt image with the same tag
 kubectl rollout status deploy/einvoice-rules --timeout 2m
-kubectl wait --for=condition=Available mcpserver/einvoice-rules --timeout 2m
+kubectl wait --for=condition=Available mcpserver/einvoice-rules --timeout 5m
 kubectl wait --for=condition=ModelAvailable model/default --timeout 3m
 kubectl get tools -l mcp/server=einvoice-rules
 
